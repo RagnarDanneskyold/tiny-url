@@ -1,0 +1,19 @@
+.container {
+    max-width: 1440px;
+    margin: 0 auto;
+}
+.input {
+    display: flex;
+    margin-bottom: 30px;
+}
+#originalUrl {
+    width: 600px;
+}
+#tinyUrl {
+    width: 300px;
+}
+
+.btn {
+    border-radius: 5px;
+    margin-bottom: 30px;
+}
