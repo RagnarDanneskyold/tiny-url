@@ -12,16 +12,64 @@ class CreateController extends BaseController
     }
 
     public function create() {
-        $sourceUrl = json_decode(file_get_contents("php://input"));
+        $sourceUrl = self::getInput();
         $shortUrl = $this->makeTinyUrl($sourceUrl);
 
         self::json($shortUrl);
     }
 
-    public function getAllUrls() {
-        self::json('testGet');
+    public function getUrlsList() {
+        session_start();
+        if (self::sessionGet('auth') === 'true'){
+            if (empty($_GET)) {
+                $allUrlsArray = $this->getAllUrlArray();
+            } elseif (isset($_GET['filter'])) {
+                $allUrlsArray = $this->getAllUrlArray($_GET['filter'], $_GET['value']);
+            }
+
+            return self::json($allUrlsArray);
+        }
+
+        return self::json('нет доступа');
     }
 
+    private function getAllUrlArray(string $field = null, string $value = null) {
+        $query = 'SELECT * FROM ' . $this->urlsTable;
+        if (isset($field) && isset($value)) {
+            $query .= '
+WHERE ' . $field . ' LIKE "%' . $value . '%"
+            ';
+        }
+
+        return $this->db->query($query);
+    }
+
+    public function updateUrl() {
+        $input = self::getInput();
+        $urlData = json_decode(json_encode($input), TRUE);
+        $query = '
+UPDATE ' . $this->urlsTable . '
+SET url = :url , short_url = :short_url
+WHERE id = :id        
+      ';
+
+      return $this->db->query(
+          $query,
+          [
+              'url' => $urlData['url'],
+              'short_url' => $urlData['short_url'],
+              'id' => $urlData['id']
+          ]
+      );
+
+    }
+
+    public function deleteUrl() {
+        $input = self::getInput();
+        $urlData = json_decode(json_encode($input), TRUE);
+
+        return $this->db->query('DELETE FROM ' . $this->urlsTable . ' WHERE id = ' . (int)$urlData['id']);
+    }
 
     private function getTinyUrl(): string {
         $shortUrl = $this->generateUnicId();
@@ -34,9 +82,9 @@ class CreateController extends BaseController
         return $shortUrl;
     }
 
-    private function isExistShortUrl(string $shortUrl) {
+    private function isExistShortUrl(string $shortUrl): bool {
         $query = '
-SELECT id FROM urls WHERE short_url = :shortUrl      
+SELECT id FROM ' . $this->urlsTable . ' WHERE short_url = :shortUrl      
         ';
         $exist = $this->db->query($query,
             ['shortUrl' => $shortUrl],

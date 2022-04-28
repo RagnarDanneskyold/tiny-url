@@ -12,12 +12,22 @@ class AuthController extends BaseController
     }
 
     public function login() {
-        $loginData = json_decode(file_get_contents("php://input"));
+        $input = self::getInput();
+        $loginData = json_decode(json_encode($input), TRUE);
         $isAuth = $this->checkUser($loginData);
+        if ($isAuth === true) {
+            session_start();
+            self::sessionSet('auth', 'true');
+        }
         return self::json($isAuth);
     }
+
     private function checkUser(array $loginData): bool {
-        $userData = $this->db->query('SELECT * FROM users WHERE id = 1');
+        $userData = $this->db->query(
+            'SELECT * FROM ' . $this->usersTable . ' WHERE login = :login',
+            ['login' => $loginData['login']],
+            true
+        );
         if (password_verify($loginData['password'], $userData['password'])) {
             return true;
         } else {

@@ -6,9 +6,9 @@ use PDO;
 
 class db
 {
-    private $host = '';
-    private $database = '';
-    private $username = '';
+    private $host = 'localhost';
+    private $database = 'tiny-url';
+    private $username = 'root';
     private $password = '';
     private $db = null;
     private static $instance = null;

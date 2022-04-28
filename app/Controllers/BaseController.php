@@ -3,11 +3,14 @@
 namespace App\Controllers;
 
 use App\db;
+use App\Request;
 
 class BaseController
 {
 
     protected $urlsTable = 'urls';
+    protected $usersTable = 'users';
+    protected $redirectsTable = 'redirects';
 
     static function json ($data, $code = 200, $header = 'Content-type: application/json; charset=utf-8')
     {
@@ -23,5 +26,17 @@ class BaseController
 
     static function getAdapter () {
         return db::getInstance();
+    }
+
+    static function getInput () {
+        return Request::getInput();
+    }
+
+    static function sessionGet($name) {
+        return $_SESSION[$name];
+    }
+
+    static function sessionSet($name, $value) {
+        $_SESSION[$name] = $value;
     }
 }
